@@ -1,0 +1,52 @@
+'''
+Nombre: Captura de temperatura y humedad
+Version: 1.0
+Autor: Rafael Mejia
+Fecha: Febrero 21, 2021
+Placa: NodeMCU ESP8266
+Funcion: Captura lecturas de sensor DHT11, indicando con leds si la temperatura es alta(rojo) o baja (azul).
+Primera version sin envio de datos a la web.
+
+'''
+#Importar librerias
+from machine import Pin
+import time
+import dht 
+
+#Identificacion del sensor y su ubicacion
+sensor = dht.DHT11(Pin(14))
+ledA = Pin(00, Pin.OUT)
+ledR = Pin(02, Pin.OUT)
+
+ledA.off()
+ledR.off()
+
+while True:
+  try:
+    sleep(10) # Tiempo en segundos entre cada lectura
+    sensor.measure() #almacena lecturas
+    temp = sensor.temperature()
+    hum = sensor.humidity()
+    
+    if temp > 25.0:
+      ledA.off()
+      for i in range(5):
+        ledR.on()
+        time.sleep(0.5)
+        ledR.off()
+        time.sleep(0.5)
+      print('Temperatura: %3.1f C' %temp)
+      print('Humedad: %3.1f %%' %hum)
+    else:
+      ledR.off()
+      for i in range(5):
+        ledA.on()
+        time.sleep(0.5)
+        ledA.off()
+        time.sleep(0.5)
+      print('Temperatura: %3.1f C' %temp)
+      print('Humedad: %3.1f %%' %hum)  
+      
+  except OSError as e:
+    print('Error en lectura del sensor.')
+
