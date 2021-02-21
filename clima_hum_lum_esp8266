@@ -1,0 +1,65 @@
+// Incluimos librería
+#include <DHT.h>
+ 
+// Definimos el pin digital donde se conecta el sensor
+#define DHTPIN 2
+// Dependiendo del tipo de sensor
+#define DHTTYPE DHT11
+ 
+// Inicializamos el sensor DHT11
+DHT dht(DHTPIN, DHTTYPE);
+ 
+void setup() {
+  // Inicializamos comunicación serie
+  Serial.begin(9600);
+ 
+  // Comenzamos el sensor DHT
+  dht.begin();
+ 
+}
+ 
+void loop() {
+    // Esperamos 30 minutos (30*60*1000) entre medidas
+  delay(7000);
+ 
+  // Leemos la humedad relativa
+  float h = dht.readHumidity();
+  // Leemos la temperatura en grados centígrados (por defecto)
+  float t = dht.readTemperature();
+  // Leemos la temperatura en grados Fahreheit
+  float f = dht.readTemperature(true);
+
+  //Luminosidad leido en pin analogo 0 A0
+  int sensorValue = analogRead(A0);
+
+  //Convierte la señal analoga (va desde 0 - 1023 a un voltaje de 0 a 5V)
+  float voltaje = sensorValue * (0.5 / 1023.0);
+
+  // Comprobamos si ha habido algún error en la lectura
+  if (isnan(h) || isnan(t) || isnan(f)) {
+    Serial.println("Error obteniendo los datos del sensor DHT11");
+    return;
+  }
+ 
+  // Calcular el índice de calor en Fahreheit
+  float hif = dht.computeHeatIndex(f, h);
+  // Calcular el índice de calor en grados centígrados
+  float hic = dht.computeHeatIndex(t, h, false);
+
+  Serial.print("Luminosidad: ");
+  Serial.print(voltaje); //Imprime salida de luminosidad
+  Serial.print("\t");
+  Serial.print("Humedad: ");
+  Serial.print(h);
+  Serial.print(" %\t");
+  Serial.print("Temperatura: ");
+  Serial.print(t);
+  Serial.print(" ºC ");
+  Serial.print(f);
+  Serial.print(" ºF\t");
+  Serial.print("Índice de calor: ");
+  Serial.print(hic);
+  Serial.print(" ºC ");
+  Serial.print(hif);
+  Serial.println(" ºF");
+}
