@@ -22,10 +22,10 @@ import gc
 
 gc.collect()
 
-ssid = 'Tenda8163F0'
-password = '9y79M4Jt'
+ssid = 'SSID'
+password = 'PASS'
 
-api_key = 'bh7BzQHf8oFqXKfZ6tV2iS'
+api_key = 'API_KEY'
 
 station = network.WLAN(network.STA_IF)
 station.active(True)
