@@ -1,0 +1,93 @@
+'''
+Nombre: Captura de temperatura y humedad
+Version: 1.0
+Autor: Rafael Mejia
+Fecha: Febrero 21, 2021
+Placa: NodeMCU ESP8266
+Funcion: Captura lecturas de sensor DHT11, indicando con leds si la temperatura es alta(rojo) o baja (azul).
+Primera version sin envio de datos a la web.
+
+'''
+#Importar librerias
+from machine import Pin
+import time
+import dht
+import network
+import urequests
+
+import esp
+esp.osdebug(None)
+
+import gc
+
+gc.collect()
+
+ssid = 'Tenda8163F0'
+password = '9y79M4Jt'
+
+api_key = 'bh7BzQHf8oFqXKfZ6tV2iS'
+
+station = network.WLAN(network.STA_IF)
+station.active(True)
+station.connect(ssid, password)
+
+while station.isconnected() == False:
+  pass
+
+print('Connection successful')
+print(station.ifconfig())
+
+
+#Identificacion del sensor y su ubicacion
+sensor = dht.DHT11(Pin(14))
+ledA = Pin(00, Pin.OUT)
+ledR = Pin(02, Pin.OUT)
+
+ledA.off()
+ledR.off()
+
+while True:
+  try:
+    time.sleep(10) # Tiempo en segundos entre cada lectura
+    sensor.measure() #almacena lecturas
+    temp = sensor.temperature()
+    hum = sensor.humidity()
+    
+    if temp > 25.0:
+      ledA.off()
+      for i in range(5):
+        ledR.on()
+        time.sleep(0.5)
+        ledR.off()
+        time.sleep(0.5)
+      sensor_readings = {'value1':temp, 'value2':hum}
+      print('Temperatura: %3.1f C' %temp)
+      print('Humedad: %3.1f %%' %hum)
+      request_headers = {'Content-Type': 'application/json'}
+
+      request = urequests.post('http://maker.ifttt.com/trigger/dht11/with/key/' + api_key,
+      json=sensor_readings, headers=request_headers)
+      
+      print(request.text)
+      request.close()
+      
+    else:
+      ledR.off()
+      for i in range(5):
+        ledA.on()
+        time.sleep(0.5)
+        ledA.off()
+        time.sleep(0.5)
+      sensor_readings = {'value1':temp, 'value2':hum}
+      print('Temperatura: %3.1f C' %temp)
+      print('Humedad: %3.1f %%' %hum)  
+      request_headers = {'Content-Type': 'application/json'}
+
+      request = urequests.post('http://maker.ifttt.com/trigger/dht11/with/key/' + api_key, 
+      json=sensor_readings, headers=request_headers)
+
+      print(request.text)
+      request.close()
+      
+  except OSError as e:
+    print('Error en lectura/escritura del sensor.')
